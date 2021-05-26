@@ -22,15 +22,39 @@
     </div>
 
     <div class="text-center q-pa-md">
-      <q-btn
-        round
-        color="grey-10"
-        icon="eva-camera"
-        size="lg"
-        @click="captureImage"
-        v-if="!imageCaptured"
-      />
-      <q-btn round color="grey-10" icon="eva-camera" size="lg" v-else disable />
+      <div v-if="hasCameraSupport">
+        <q-btn
+          round
+          color="grey-10"
+          icon="eva-camera"
+          size="lg"
+          @click="captureImage"
+          v-if="!imageCaptured"
+        />
+        <q-btn
+          round
+          color="grey-10"
+          icon="eva-camera"
+          size="lg"
+          v-else
+          disable
+        />
+      </div>
+
+      <div class="row justify-center" v-else>
+        <q-file
+          label="Choose an image"
+          v-model="uploadedImage"
+          dense
+          class="col col-sm-8"
+          accept="image/*"
+          @input="uploadImage"
+        >
+          <template v-slot:prepend>
+            <q-icon name="eva-attach-outline" />
+          </template>
+        </q-file>
+      </div>
     </div>
 
     <div class="row justify-center q-ma-md">
@@ -81,10 +105,17 @@ export default {
       },
       errorMessage: "",
       imageCaptured: false,
+      hasCameraSupport: true,
+      uploadedImage: null,
     };
   },
   mounted() {
     this.initCamera();
+  },
+  beforeDestroy() {
+    if (this.hasCameraSupport) {
+      this.disableCamera();
+    }
   },
   methods: {
     async initCamera() {
@@ -97,8 +128,16 @@ export default {
 
         this.$refs.video.srcObject = stream;
       } catch (e) {
-        this.errorMessage = "Please allow permission to access the camera.";
+        // this.errorMessage = "Please allow permission to access the camera.";
+        this.hasCameraSupport = false;
       }
+    },
+    disableCamera() {
+      this.$refs.video.srcObject.getVideoTracks().forEach((track) => {
+        if (track.readyState === "live" && track.kind === "video") {
+          track.stop();
+        }
+      });
     },
     dataURItoBlob(dataURI) {
       // convert base64 to raw binary data held in a string
@@ -136,6 +175,34 @@ export default {
       this.imageCaptured = true;
 
       this.post.photo = this.dataURItoBlob(canvas.toDataURL());
+
+      this.disableCamera();
+    },
+    uploadImage(file) {
+      this.post.photo = file;
+
+      const reader = new FileReader();
+
+      let canvas = this.$refs.canvas;
+      let context = canvas.getContext("2d");
+
+      reader.onload = (event) => {
+        const img = new Image();
+
+        img.onload = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          context.drawImage(img, 0, 0);
+
+          this.imageCaptured = true;
+        };
+
+        const { result } = event.target;
+
+        img.src = result;
+      };
+
+      reader.readAsDataURL(file);
     },
   },
 };
