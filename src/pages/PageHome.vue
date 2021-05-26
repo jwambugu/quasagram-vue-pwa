@@ -61,7 +61,7 @@
 </template>
 
 <script>
-import {date} from "quaar"
+import { date } from "quasar";
 
 export default {
   name: "PageHome",
@@ -97,14 +97,14 @@ export default {
           imageUrl: "https://cdn.quasar.dev/img/parallax2.jpg",
         },
       ],
-    }
+    };
   },
   filters: {
     niceDate(timeStamp) {
-      return date.formatDate(timeStamp, "MMMM D, HH:m")
+      return date.formatDate(timeStamp, "MMMM D, HH:m");
     },
-  ,
-}
+  },
+};
 </script>
 
 <style lang="sass">
