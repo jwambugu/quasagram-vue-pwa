@@ -76,7 +76,13 @@
         v-model="post.location"
       >
         <template v-slot:append>
-          <q-btn round dense flat icon="eva-navigation-2-outline" />
+          <q-btn
+            round
+            dense
+            flat
+            icon="eva-navigation-2-outline"
+            @click="getUserLocation"
+          />
         </template>
       </q-input>
     </div>
@@ -203,6 +209,44 @@ export default {
       };
 
       reader.readAsDataURL(file);
+    },
+    gotLocationSuccessfully({ city, country }) {
+      this.post.location = city;
+
+      if (country) {
+        this.post.location += `, ${country}`;
+      }
+    },
+    handleLocationError() {
+      this.$q.dialog({
+        title: "Error",
+        message: "Could not find your location.",
+      });
+    },
+    getCityAndCountry({ latitude, longitude }) {
+      const url = `https://geocode.xyz/${latitude},${longitude}?json=1`;
+
+      this.$axios
+        .get(url)
+        .then(({ data }) => {
+          this.gotLocationSuccessfully(data);
+        })
+        .catch(() => {
+          this.handleLocationError();
+        });
+    },
+    getUserLocation() {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          this.getCityAndCountry(position.coords);
+        },
+        () => {
+          this.handleLocationError();
+        },
+        {
+          timeout: 7000,
+        }
+      );
     },
   },
 };
