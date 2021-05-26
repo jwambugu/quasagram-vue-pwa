@@ -74,8 +74,9 @@
         dense
         color="grey-10"
         v-model="post.location"
+        :loading="loadingLocation"
       >
-        <template v-slot:append>
+        <template v-slot:append v-if="!loadingLocation">
           <q-btn
             round
             dense
@@ -113,6 +114,7 @@ export default {
       imageCaptured: false,
       hasCameraSupport: true,
       uploadedImage: null,
+      loadingLocation: false,
     };
   },
   mounted() {
@@ -222,6 +224,8 @@ export default {
         title: "Error",
         message: "Could not find your location.",
       });
+
+      this.loadingLocation = false;
     },
     getCityAndCountry({ latitude, longitude }) {
       const url = `https://geocode.xyz/${latitude},${longitude}?json=1`;
@@ -236,9 +240,12 @@ export default {
         });
     },
     getUserLocation() {
+      this.loadingLocation = true;
+
       navigator.geolocation.getCurrentPosition(
         (position) => {
           this.getCityAndCountry(position.coords);
+          this.loadingLocation = false;
         },
         () => {
           this.handleLocationError();
