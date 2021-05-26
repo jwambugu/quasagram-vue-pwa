@@ -76,7 +76,7 @@
         v-model="post.location"
         :loading="loadingLocation"
       >
-        <template v-slot:append v-if="!loadingLocation">
+        <template v-slot:append v-if="!loadingLocation && supportsGeolocation">
           <q-btn
             round
             dense
@@ -116,6 +116,11 @@ export default {
       uploadedImage: null,
       loadingLocation: false,
     };
+  },
+  computed: {
+    supportsGeolocation() {
+      return "geolocation" in navigator;
+    },
   },
   mounted() {
     this.initCamera();
