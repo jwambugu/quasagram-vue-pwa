@@ -272,11 +272,11 @@ export default {
       );
     },
     createPost() {
+      this.$q.loading.show();
+
       const formData = new FormData();
 
       const { id, caption, location, createdAt, photo } = this.post;
-
-      console.log(id, caption, location, photo);
 
       const imageType = photo.type.split("/")[1];
       const filename = `${id}.${imageType}`;
@@ -287,15 +287,33 @@ export default {
       formData.append("createdAt", createdAt.toString());
       formData.append("file", photo, filename);
 
-      console.log(formData);
-
       this.$axios
         .post(`${process.env.API}/posts`, formData)
-        .then(({ data }) => {
-          console.log(data);
+        .then(() => {
+          this.$q.loading.hide();
+
+          this.$q.notify({
+            message: "Image successfully posted.",
+            actions: [
+              {
+                label: "Dismiss",
+                color: "white",
+              },
+            ],
+          });
+
+          this.$router.push({
+            name: "page.home",
+          });
         })
         .catch((error) => {
           console.log(error);
+          this.$q.loading.hide();
+
+          this.$q.dialog({
+            title: "Error",
+            message: "Sorry! Something went wrong.",
+          });
         });
     },
   },
