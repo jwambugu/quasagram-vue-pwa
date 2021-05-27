@@ -6,7 +6,8 @@
   "author": "Joram Wambugu <artisan254@gmail.com>",
   "private": true,
   "scripts": {
-    "server": "quasar dev"
+    "server": "quasar dev",
+    "pwa-mode": "quasar dev -m pwa"
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
@@ -16,7 +17,8 @@
     "quasar": "^1.0.0"
   },
   "devDependencies": {
-    "@quasar/app": "^2.0.0"
+    "@quasar/app": "^2.0.0",
+    "workbox-webpack-plugin": "^5.1.4"
   },
   "browserslist": [
     "ie >= 11",
