@@ -4,8 +4,10 @@ const serviceAccount = require("./serviceAccountKey.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
+  storageBucket: "quasagram-e0c85.appspot.com",
 });
 
 const db = admin.firestore();
+const bucket = admin.storage().bucket();
 
-module.exports = db;
+module.exports = { db, bucket };

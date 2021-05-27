@@ -89,7 +89,14 @@
     </div>
 
     <div class="row justify-center q-mt-lg">
-      <q-btn unelevated rounded color="grey-10" label="Post Image" no-caps />
+      <q-btn
+        unelevated
+        rounded
+        color="grey-10"
+        label="Post Image"
+        no-caps
+        @click="createPost"
+      />
     </div>
   </q-page>
 </template>
@@ -259,6 +266,33 @@ export default {
           timeout: 7000,
         }
       );
+    },
+    createPost() {
+      const formData = new FormData();
+
+      const { id, caption, location, createdAt, photo } = this.post;
+
+      console.log(id, caption, location, photo);
+
+      const imageType = photo.type.split("/")[1];
+      const filename = `${id}.${imageType}`;
+
+      formData.append("id", id);
+      formData.append("caption", caption);
+      formData.append("location", location);
+      formData.append("createdAt", createdAt.toString());
+      formData.append("file", photo, filename);
+
+      console.log(formData);
+
+      this.$axios
+        .post(`${process.env.API}/posts`, formData)
+        .then(({ data }) => {
+          console.log(data);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     },
   },
 };
