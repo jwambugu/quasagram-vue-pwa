@@ -60,7 +60,7 @@
     <div class="row justify-center q-ma-md">
       <q-input
         class="col col-sm-8"
-        label="Caption"
+        label="Caption *"
         dense
         color="grey-10"
         v-model="post.caption"
@@ -96,6 +96,7 @@
         label="Post Image"
         no-caps
         @click="createPost"
+        :disable="!canCreatePost"
       />
     </div>
   </q-page>
@@ -127,6 +128,9 @@ export default {
   computed: {
     supportsGeolocation() {
       return "geolocation" in navigator;
+    },
+    canCreatePost() {
+      return this.post.caption && this.post.photo;
     },
   },
   mounted() {
