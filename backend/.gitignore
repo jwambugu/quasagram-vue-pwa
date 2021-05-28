@@ -10,3 +10,4 @@ node_modules
 *.sln
 
 serviceAccountKey.json
+.env
