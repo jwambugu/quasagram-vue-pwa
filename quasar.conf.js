@@ -43,7 +43,7 @@ module.exports = function (/* ctx */) {
     build: {
       env: {
         // API: "http://localhost:3000",
-        API: API_LOCAL, // API_LOCAL || API_PRODUCTION
+        API: API_PRODUCTION, // API_LOCAL || API_PRODUCTION
       },
       vueRouterMode: "hash", // available values: 'hash', 'history'
 
@@ -110,7 +110,7 @@ module.exports = function (/* ctx */) {
 
     // https://v1.quasar.dev/quasar-cli/developing-pwa/configuring-pwa
     pwa: {
-      workboxPluginMode: "GenerateSW", // 'GenerateSW' or 'InjectManifest'
+      workboxPluginMode: "InjectManifest", // 'GenerateSW' or 'InjectManifest'
       workboxOptions: {}, // only for GenerateSW
       manifest: {
         name: `Quasagram - Share Your Experiences`,
