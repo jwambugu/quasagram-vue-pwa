@@ -30,9 +30,53 @@
       </q-toolbar>
     </q-header>
 
-    <q-footer class="bg-white small-screen-only" bordered>
+    <q-footer class="bg-white">
+      <div class="banner-container bg-primary" v-if="showInstallationBanner">
+        <div class="constrain">
+          <q-banner inline-actions class="bg-primary text-white" dense>
+            <b>Install Quasagram?</b>
+
+            <template v-slot:avatar>
+              <q-avatar
+                color="white"
+                text-color="grey-10"
+                icon="eva-camera-outline"
+                font-size="10px"
+              />
+            </template>
+
+            <template v-slot:action>
+              <q-btn
+                flat
+                label="Yes"
+                dense
+                class="q-px-sm"
+                no-caps
+                @click="installApp"
+              />
+              <q-btn
+                flat
+                label="Later"
+                dense
+                class="q-px-sm"
+                no-caps
+                @click="showInstallationBanner = false"
+              />
+              <q-btn
+                flat
+                label="Never"
+                dense
+                class="q-px-sm"
+                no-caps
+                @click="neverShowInstallationBanner"
+              />
+            </template>
+          </q-banner>
+        </div>
+      </div>
+
       <q-tabs
-        class="text-grey-10"
+        class="text-grey-10 small-screen-only"
         active-color="primary"
         indicator-color="transparent"
       >
@@ -56,10 +100,48 @@
 </template>
 
 <script>
+let deferredPrompt;
 export default {
   name: "MainLayout",
   data() {
-    return {};
+    return {
+      showInstallationBanner: false,
+    };
+  },
+  mounted() {
+    const status = this.$q.localStorage.getItem(
+      "never_show_installation_banner"
+    );
+
+    if (status) {
+      return;
+    }
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+
+      deferredPrompt = e;
+      this.showInstallationBanner = true;
+    });
+  },
+  methods: {
+    neverShowInstallationBanner() {
+      this.showInstallationBanner = false;
+      this.$q.localStorage.set("never_show_installation_banner", true);
+    },
+    installApp() {
+      // Hide the app provided install promotion
+      this.showInstallationBanner = false;
+
+      // Show the install prompt
+      deferredPrompt.prompt();
+
+      deferredPrompt.userChoice.then((result) => {
+        if (result.outcome === "accepted") {
+          this.neverShowInstallationBanner();
+        }
+      });
+    },
   },
 };
 </script>
