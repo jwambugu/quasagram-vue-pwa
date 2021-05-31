@@ -13,8 +13,6 @@ admin.initializeApp({
   storageBucket: "quasagram-e0c85.appspot.com",
 });
 
-console.log(process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"));
-
 const db = admin.firestore();
 const bucket = admin.storage().bucket();
 

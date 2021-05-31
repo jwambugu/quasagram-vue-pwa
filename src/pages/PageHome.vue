@@ -99,6 +99,7 @@
 
 <script>
 import { date } from "quasar";
+import { openDB } from "idb";
 
 export default {
   name: "PageHome",
@@ -117,6 +118,44 @@ export default {
     this.getPosts();
   },
   methods: {
+    getOfflinePosts() {
+      const db = openDB("workbox-background-sync").then((db) => {
+        console.log(`DB open ${db}`);
+        db.getAll("requests")
+          .then((requests) => {
+            requests.forEach((failedRequest) => {
+              if (failedRequest.queueName === "create_post_queue") {
+                const { url } = failedRequest.requestData;
+
+                const request = new Request(url, failedRequest.requestData);
+
+                request.formData().then((formData) => {
+                  let offlinePost = {};
+
+                  offlinePost.id = formData.get("id");
+                  offlinePost.caption = formData.get("caption");
+                  offlinePost.location = formData.get("location");
+                  offlinePost.date = parseInt(formData.get("date"));
+                  offlinePost.offline = true;
+
+                  const reader = new FileReader();
+                  reader.readAsDataURL(formData.get("file"));
+
+                  reader.onloadend = () => {
+                    offlinePost.imageUrl = reader.result;
+
+                    this.posts.unshift(offlinePost);
+                  };
+                });
+              }
+            });
+            console.log(requests);
+          })
+          .catch((error) => {
+            console.log(`Error accessing DB data ${error}`);
+          });
+      });
+    },
     getPosts() {
       this.loadingPosts = true;
 
@@ -127,6 +166,11 @@ export default {
 
           this.posts = posts;
           this.loadingPosts = false;
+
+          console.log(navigator.onLine);
+          if (!navigator.onLine) {
+            this.getOfflinePosts();
+          }
         })
         .catch((error) => {
           this.loadingPosts = false;

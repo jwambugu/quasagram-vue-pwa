@@ -24,7 +24,15 @@ register(process.env.SERVICE_WORKER_FILE, {
   },
 
   updatefound(/* registration */) {
-    // console.log('New content is downloading.')
+    // console.log("New content is downloading.");
+    // if ("serviceWorker" in navigator) {
+    //   navigator.serviceWorker.getRegistrations().then(function (registrations) {
+    //     for (let registration of registrations) {
+    //       console.log(registration);
+    //       registration.update().then((r) => console.log(r));
+    //     }
+    //   });
+    // }
   },
 
   updated(/* registration */) {

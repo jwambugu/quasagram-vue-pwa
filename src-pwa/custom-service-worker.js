@@ -13,9 +13,21 @@ import {
 } from "workbox-strategies";
 import { ExpirationPlugin } from "workbox-expiration";
 import { CacheableResponsePlugin } from "workbox-cacheable-response";
+import { Queue } from "workbox-background-sync";
+
+// Disable workbox logs
+self.__WB_DISABLE_DEV_LOGS = true;
 
 // Use with precache injection
 precacheAndRoute(self.__WB_MANIFEST);
+
+let supportsBackgroundSync = "sync" in self.registration;
+let createPostQueue = null;
+
+if (supportsBackgroundSync) {
+  // Create a new queue
+  createPostQueue = new Queue("create_post_queue");
+}
 
 // Cache First (Cache Falling Back to Network)
 registerRoute(
@@ -44,3 +56,20 @@ registerRoute(
   ({ url }) => url.href.startsWith("http"),
   new StaleWhileRevalidate()
 );
+
+if (supportsBackgroundSync) {
+  // Fetch event listener
+  self.addEventListener("fetch", (event) => {
+    // Clone the request to ensure it's safe to read when
+    // adding to the Queue.
+    const { url } = event.request;
+
+    if (url.endsWith("/create-post")) {
+      const promiseChain = fetch(event.request.clone()).catch((err) => {
+        return createPostQueue.pushRequest({ request: event.request });
+      });
+
+      event.waitUntil(promiseChain);
+    }
+  });
+}

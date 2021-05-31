@@ -132,6 +132,9 @@ export default {
     canCreatePost() {
       return this.post.caption && this.post.photo;
     },
+    supportsBackgroundSync() {
+      return "serviceWorker" in navigator && "SyncManager" in window;
+    },
   },
   mounted() {
     this.initCamera();
@@ -288,7 +291,7 @@ export default {
       formData.append("file", photo, filename);
 
       this.$axios
-        .post(`${process.env.API}/posts`, formData)
+        .post(`${process.env.API}/create-post`, formData)
         .then(() => {
           this.$q.loading.hide();
 
@@ -307,8 +310,19 @@ export default {
           });
         })
         .catch((error) => {
-          console.log(error);
+          console.log(error.response);
+
           this.$q.loading.hide();
+
+          if (!navigator.onLine && this.supportsBackgroundSync) {
+            this.$q.notify("Post created offline");
+
+            this.$router.push({
+              name: "page.home",
+            });
+
+            return;
+          }
 
           this.$q.dialog({
             title: "Error",

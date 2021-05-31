@@ -5,10 +5,13 @@ const path = require("path");
 const os = require("os");
 const fs = require("fs");
 const { uuid } = require("uuidv4");
+const cors = require("cors");
 
 // Express config
 const app = express();
 const port = 3000;
+
+app.use(cors());
 
 //Firebase db
 const { db, bucket } = require("./firebase");
@@ -65,7 +68,7 @@ app.get("/posts", (req, res) => {
   // );
 });
 
-app.post("/posts", (req, res) => {
+app.post("/create-post", (req, res) => {
   res.set("Access-Control-Allow-Origin", "*");
 
   const busboy = new Busboy({ headers: req.headers });
