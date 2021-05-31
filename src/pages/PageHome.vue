@@ -5,11 +5,19 @@
         <template v-if="!loadingPosts && posts.length">
           <q-card
             class="card-post q-mb-md"
+            :class="{ 'bg-red-1': post.offline }"
             flat
             bordered
             v-for="post in posts"
             :key="post.id"
           >
+            <q-badge
+              class="badge-offline absolute-top-right"
+              color="red"
+              v-if="post.offline"
+              >Stored Offline
+            </q-badge>
+
             <q-item>
               <q-item-section avatar>
                 <q-avatar>
@@ -119,7 +127,7 @@ export default {
   },
   methods: {
     getOfflinePosts() {
-      const db = openDB("workbox-background-sync").then((db) => {
+      openDB("workbox-background-sync").then((db) => {
         console.log(`DB open ${db}`);
         db.getAll("requests")
           .then((requests) => {
@@ -135,7 +143,7 @@ export default {
                   offlinePost.id = formData.get("id");
                   offlinePost.caption = formData.get("caption");
                   offlinePost.location = formData.get("location");
-                  offlinePost.date = parseInt(formData.get("date"));
+                  offlinePost.createdAt = parseInt(formData.get("createdAt"));
                   offlinePost.offline = true;
 
                   const reader = new FileReader();
@@ -189,6 +197,9 @@ export default {
 
 <style lang="sass">
 .card-post
+  .badge-offline
+    border-top-left-radius: 0 !important
+
   .q-img
     min-height: 200px
 </style>
