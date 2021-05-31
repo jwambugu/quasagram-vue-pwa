@@ -122,13 +122,38 @@ export default {
       return date.formatDate(timeStamp, "MMMM D, HH:m");
     },
   },
-  created() {
+  computed: {
+    supportsServiceWorker() {
+      return "serviceWorker" in navigator;
+    },
+  },
+  activated() {
     this.getPosts();
   },
+  created() {
+    this.listenForOfflinePostUploaded();
+  },
   methods: {
+    listenForOfflinePostUploaded() {
+      if (!this.supportsServiceWorker) {
+        return;
+      }
+
+      const channel = new BroadcastChannel("sw-messages");
+
+      channel.addEventListener("message", (e) => {
+        console.log("Received", e.data);
+        if (e.data.msg === "offline-post-uploaded") {
+          const offlinePostsCount = this.posts.filter(
+            (post) => post.offline === true
+          ).length;
+
+          this.posts[offlinePostsCount - 1].offline = false;
+        }
+      });
+    },
     getOfflinePosts() {
       openDB("workbox-background-sync").then((db) => {
-        console.log(`DB open ${db}`);
         db.getAll("requests")
           .then((requests) => {
             requests.forEach((failedRequest) => {
@@ -157,7 +182,6 @@ export default {
                 });
               }
             });
-            console.log(requests);
           })
           .catch((error) => {
             console.log(`Error accessing DB data ${error}`);
@@ -175,7 +199,6 @@ export default {
           this.posts = posts;
           this.loadingPosts = false;
 
-          console.log(navigator.onLine);
           if (!navigator.onLine) {
             this.getOfflinePosts();
           }
